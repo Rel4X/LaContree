@@ -18,7 +18,7 @@ private:
 	unsigned int					p_scores[2];				// Score des deux equipes.
 	Card*							p_current_fold[4];			// Cartes jouees sur la table.
 	Card*							p_fold_history[2][8][4];	// Plis deja win.
-	Card*							p_last_fold[4];				// Pointeur vers le dernier plis.
+	Card**							p_last_fold;				// Pointeur vers le dernier plis.
 	unsigned int					p_dealer;					// Id du mec qui commence la game.
 	unsigned int					p_beginer;					// Id du mec qui commence le round.
 	unsigned int					p_turn;						// Id du mec a qui c'est le tour de jouer (== p_dealer au debut).

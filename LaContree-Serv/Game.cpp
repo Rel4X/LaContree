@@ -7,6 +7,11 @@ Game::Game(void) :
 	memset(this->p_current_fold, 0, sizeof(Card*) * 4);
 	this->p_scores[0] = 0;
 	this->p_scores[1] = 0;
+	// Tableau de la mort !
+	for (int i = 0; i < 2; ++i)
+		for (int j = 0; j < 8; ++j)
+			for (int k = 0; k < 4; ++k)
+				this->p_fold_history[i][j][k] = 0x0;
 }
 
 Game::~Game(void)
@@ -50,8 +55,12 @@ bool		Game::Run()
 				this->GoToNextPlayer();
 			}
 			// Fin du round : On change le beginner pour que le gagnant du round joue en premier (on met son id dans p_turn).
-			// On ajoute le plis au au fold history et on met a jour le pointer vers last_fold.
-			this->PrintConsole();
+			// On compte les scores.
+			// Modifier la boucle en dessous pour ajouter le plis dans la bonne team, en fonction du player winner.
+			
+			for (int i = 0; i < 4; ++i)										//
+				this->p_fold_history[0][j][i] = this->p_current_fold[i];	//	On place les folds la ou il faut.
+			this->p_last_fold = this->p_fold_history[0][j];					//
 		}
 		// Ici on compte les points
 		return (true);
