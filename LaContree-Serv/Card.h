@@ -25,9 +25,9 @@ public:
 		Seven	= 7
 	};
 
-private:
-	static const char*	p_eColorText[4];
-	static const char*	p_eFigureText[8];
+public:
+	static const char*	eColorText[4];
+	static const char*	eFigureText[8];
 
 private:
 	eColor		p_color;
