@@ -24,5 +24,6 @@ public:
 	void	Shuffle();
 	void	Cut();
 	Card*	Pick();
+	void	Put(Card*);
 };
 

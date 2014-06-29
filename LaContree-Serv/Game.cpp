@@ -1,4 +1,4 @@
-#include	"Game.h"
+ #include	"Game.h"
 
 Game::Game(void) :
 	p_players(4), p_round_goal(0), p_dealer(0),
@@ -20,50 +20,71 @@ Game::~Game(void)
 
 bool		Game::Run()
 {
+	bool			gamefinished;
+	unsigned int	played_card_idx;
+	Card*			played_card;
+	int				id_fold_winner;
+	int				last_fold_winner_team;
+
+	gamefinished = false;
 	this->p_deck.Shuffle();
-
-	// Ici boucle principale, tant qu'aucune equipe n'a atteint 1000 points.
-	// Ici, on coupe avant de distribuer.
-	if (this->Distribute())
+	this->p_dealer = 0;			// Sera definit au hasard ... ou pas ..
+	this->p_beginer = 0;
+	this->p_turn = 0;
+	while (!gamefinished)
 	{
-		unsigned int	played_card_idx;
-		Card*			played_card;
-
-		this->p_dealer = 0;						// Sera definit au hasard ... ou pas ..
-		this->p_beginer = 0;
-		this->p_turn = 0;
-		// annonces
-		this->p_trump = Card::eColor::Spade;	//	Ces deux variables seront
-		this->p_round_goal = 120;				//  set par les annonces.
-
-		for (int j = 0; j < 8; ++j)
+		this->p_deck.Cut();
+		if (this->Distribute())
 		{
-			for (int i = 0; i < 4; ++i)
+			// annonces
+			this->p_trump = Card::eColor::Spade;	//	Ces deux variables seront
+			this->p_round_goal = 120;				//  set par les annonces.
+			this->p_speaking_team = TEAM_1;			//
+
+			for (int j = 0; j < 8; ++j)				//	Boucle du round.
 			{
-				this->p_players[this->p_turn].PrintConsole();
-				played_card_idx = this->p_players[this->p_turn].Play();				// L'input player vient de la.
-				if (this->p_players[this->p_turn].ViewCard(played_card_idx) == 0x0)
-					return (false);
-				if (this->CheckPlayedCardValidity(this->p_players[this->p_turn], played_card_idx))
+				for (int i = 0; i < 4; ++i)			//	Boucle du fold.
 				{
-					played_card = this->p_players[this->p_turn].PlayCard(played_card_idx);	// On sort la carte du player.
-					if (this->p_beginer == this->p_turn)		// Si c'est la premiere carte jouee, on set la couleur.
-						this->p_asked = played_card->GetColor();//
-					this->p_current_fold[this->p_turn] = played_card;	// On pose la carte sur la table.
+					this->p_players[this->p_turn].PrintConsole();
+					played_card_idx = this->p_players[this->p_turn].Play();				// L'input player vient de la.
+					if (this->p_players[this->p_turn].ViewCard(played_card_idx) == 0x0)
+						return (false);
+					if (this->CheckPlayedCardValidity(this->p_players[this->p_turn], played_card_idx))
+					{
+						played_card = this->p_players[this->p_turn].PlayCard(played_card_idx);	// On sort la carte du player.
+						if (this->p_beginer == this->p_turn)							//
+							this->p_asked = played_card->GetColor();					// Si c'est la premiere carte jouee, on set la couleur.
+						// TODO: Repenser la ligne de dessous pour que les cartes soient stockees dans l'ordre ou elles ont ete jouees.
+						this->p_current_fold[this->p_turn] = played_card;				// On pose la carte sur la table. PS:
+					}
+					// else, redemander a jouer tant que carte invalide.
+					this->PrintBoard();
+					this->GoToNextPlayer();
 				}
-				// else, redemander a jouer tant que carte invalide.
-				this->GoToNextPlayer();
-			}
-			// Fin du round : On change le beginner pour que le gagnant du round joue en premier (on met son id dans p_turn).
-			// On compte les scores.
-			// Modifier la boucle en dessous pour ajouter le plis dans la bonne team, en fonction du player winner.
+				// On voit qui a gagne le fold.
+				id_fold_winner = this->p_ruler.WhoWon(this->p_current_fold, this->p_asked, this->p_trump);
+				if (j == 7)													//
+					last_fold_winner_team = GET_TEAM_ID(id_fold_winner);	// Recupere la team qui fait la der.
+
+				std::cout << "Winner Card: " << std::endl;				//
+				this->p_current_fold[id_fold_winner]->PrintConsole();	// Affichage temporaire de la carte gagnante.
+				std::cout << "++++++++" << std::endl;					//
+
 			
-			for (int i = 0; i < 4; ++i)										//
-				this->p_fold_history[0][j][i] = this->p_current_fold[i];	//	On place les folds la ou il faut.
-			this->p_last_fold = this->p_fold_history[0][j];					//
+				this->p_beginer = id_fold_winner;	//
+				this->p_turn = id_fold_winner;		// On set le winner en beginer.
+
+				for (int i = 0; i < 4; ++i)																//
+				{																						//
+					this->p_fold_history[GET_TEAM_ID(id_fold_winner)][j][i] = this->p_current_fold[i];	//	On place les folds la ou il faut.
+					this->p_current_fold[i] = 0x0;														//
+				}																						//
+				this->p_last_fold = this->p_fold_history[0][j];											//
+			}
+			this->UpdateScores(last_fold_winner_team);
+			this->SetNewRound();
+			// Check ici si la partie n'est pas terminee.
 		}
-		// Ici on compte les points
-		return (true);
 	}
 	return (false);
 }
@@ -100,6 +121,67 @@ void		Game::PrintConsole()
 		this->p_last_fold[2]->PrintConsole();
 		this->p_last_fold[3]->PrintConsole();
 	}
+}
+
+void		Game::PrintBoard()
+{
+	std::cout << "----------------" << std::endl;
+	std::cout << "Asked : " << Card::eColorText[this->p_asked] << std::endl;
+	if (this->p_current_fold[0] == 0x0)
+		std::cout << "None" << std::endl;
+	else
+		this->p_current_fold[0]->PrintConsole();
+	if (this->p_current_fold[1] == 0x0)
+		std::cout << "None" << std::endl;
+	else
+		this->p_current_fold[1]->PrintConsole();
+	if (this->p_current_fold[2] == 0x0)
+		std::cout << "None" << std::endl;
+	else
+		this->p_current_fold[2]->PrintConsole();
+	if (this->p_current_fold[3] == 0x0)
+		std::cout << "None" << std::endl;
+	else
+		this->p_current_fold[3]->PrintConsole();
+	std::cout << "----------------" << std::endl;
+}
+
+void		Game::PrintFoldHistory()
+{
+	std::cout << "Printing fold history:" << std::endl;
+	for (int i = 0; i < 2; ++i)
+	{
+		std::cout << "Team " << i + 1 << ":" << std::endl;
+		for (int j = 0; j < 8; ++j)
+		{
+			for (int k = 0; k < 4; ++ k)
+			{
+				if (this->p_fold_history[i][j][k] != 0x0)
+					this->p_fold_history[i][j][k]->PrintConsole();
+			}
+			std::cout << "========" << std::endl;
+		}
+	}
+}
+
+void		Game::SetNewRound()
+{
+	this->GoToNextDealer();				// On deplace le dealer et
+	this->p_beginer = this->p_dealer;	// on set pour qu'il commence
+	this->p_turn = this->p_dealer;		// bien.
+	for (int i = 0; i < 2; ++i)											//
+	{																	//
+		for (int j = 0; j < 8; ++j)										//
+		{																// On reconstruit le deck en
+			for (int k = 0; k < 4; ++ k)								// empilant les cartes du fold
+			{															// history.
+				if (this->p_fold_history[i][j][k] != 0x0)				//
+					this->p_deck.Put(this->p_fold_history[i][j][k]);	//
+				this->p_fold_history[i][j][k] = 0x0;					//
+			}															//
+		}																//
+	}																	//
+	this->p_last_fold = 0x0;		// On reset a 0 le pointer vers le last fold.
 }
 
 bool		Game::Distribute()
@@ -157,4 +239,24 @@ void		Game::GoToNextPlayer()
 	this->p_turn++;
 	if (this->p_turn > 3)
 		this->p_turn = 0;
+}
+
+void		Game::GoToNextDealer()
+{
+	this->p_dealer++;
+	if (this->p_dealer > 3)
+		this->p_dealer = 0;
+}
+
+void		Game::UpdateScores(int der)
+{
+	char		score[2];
+
+	score[TEAM_1] = this->p_ruler.CountScore(this->p_fold_history[TEAM_1], this->p_trump);	// Possible optimisation car pas
+	score[TEAM_2] = this->p_ruler.CountScore(this->p_fold_history[TEAM_2], this->p_trump);	// necessaire de compter les 2 scores.
+	score[der] += 10;
+	if (score[this->p_speaking_team] >= this->p_round_goal)
+		this->p_scores[this->p_speaking_team] += this->p_round_goal;
+	else
+		this->p_scores[NOT_SPEAKING_TEAM(this->p_speaking_team)] += 160;
 }

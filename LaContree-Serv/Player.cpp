@@ -42,7 +42,7 @@ unsigned int	Player::Play()
 	// En attendant, je fais ca a la main.
 	int		idx;	// L'index de la carte a jouer.
 
-	std::cout << "Please play." << std::endl;
+	std::cout << "*******" << std::endl;
 	std::cin >> idx;
 	if (idx >= 0 && idx <= 7)
 		return (idx);

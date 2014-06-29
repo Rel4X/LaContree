@@ -4,16 +4,22 @@
 #include	<utility>
 #include	<string.h>
 #include	"CardsDeck.h"
+#include	"CardRuler.h"
 #include	"Player.h"
 
+#define		TEAM_1					0
+#define		TEAM_2					1
 #define		GET_TEAM_ID(id)			(id / 2 == 0 ? 0 : 1)
+#define		NOT_SPEAKING_TEAM(v)	(v == 1 ? 0 : 1)
 
 class	Game
 {
 private:
 	CardsDeck						p_deck;
+	CardRuler						p_ruler;					// Classe qui check les regles de la contree.
 	std::vector<Player>				p_players;
 	Card::eColor					p_trump;					// L'atout.
+	unsigned char					p_speaking_team;			// La team qui a passe le contrat.
 	unsigned int					p_round_goal;				// Score a atteindre sur ce round.
 	unsigned int					p_scores[2];				// Score des deux equipes.
 	Card*							p_current_fold[4];			// Cartes jouees sur la table.
@@ -33,8 +39,13 @@ public:
 
 private:
 	void				PrintConsole();
+	void				PrintBoard();
+	void				PrintFoldHistory();
+	void				SetNewRound();
 	bool				Distribute();
 	bool				CheckPlayedCardValidity(const Player&, unsigned int);
 	void				GoToNextPlayer();
+	void				GoToNextDealer();
+	void				UpdateScores(int);
 };
 

@@ -91,7 +91,6 @@ void			CardsDeck::Cut()
 		i = 0;
 		cutplace = RandomMachine::Randomize(2, 31);
 		is = this->p_cards.begin();
-		std::cout << cutplace << std::endl;
 		while (i < cutplace)
 		{
 			tmp.push_back(*is);
@@ -113,4 +112,10 @@ Card*			CardsDeck::Pick()
 	c = this->p_cards.back();
 	this->p_cards.pop_back();
 	return (c);
+}
+
+void			CardsDeck::Put(Card* c)
+{
+	if (c != 0x0)
+		this->p_cards.push_back(c);
 }
