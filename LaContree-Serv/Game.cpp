@@ -66,20 +66,10 @@ bool		Game::Run()
 				if (j == 7)													//
 					last_fold_winner_team = GET_TEAM_ID(id_fold_winner);	// Recupere la team qui fait la der.
 
-				std::cout << "Winner Card: " << std::endl;				//
-				this->p_current_fold[id_fold_winner]->PrintConsole();	// Affichage temporaire de la carte gagnante.
-				std::cout << "++++++++" << std::endl;					//
+				this->p_beginer = id_fold_winner;			//
+				this->p_turn = id_fold_winner;				// On set le winner en beginer.
 
-			
-				this->p_beginer = id_fold_winner;	//
-				this->p_turn = id_fold_winner;		// On set le winner en beginer.
-
-				for (int i = 0; i < 4; ++i)																//
-				{																						//
-					this->p_fold_history[GET_TEAM_ID(id_fold_winner)][j][i] = this->p_current_fold[i];	//	On place les folds la ou il faut.
-					this->p_current_fold[i] = 0x0;														//
-				}																						//
-				this->p_last_fold = this->p_fold_history[0][j];											//
+				this->StoreFold(GET_TEAM_ID(id_fold_winner), j);			// Range le plis courrant et nettoie la table.
 			}
 			this->UpdateScores(last_fold_winner_team);
 			this->SetNewRound();
@@ -164,26 +154,6 @@ void		Game::PrintFoldHistory()
 	}
 }
 
-void		Game::SetNewRound()
-{
-	this->GoToNextDealer();				// On deplace le dealer et
-	this->p_beginer = this->p_dealer;	// on set pour qu'il commence
-	this->p_turn = this->p_dealer;		// bien.
-	for (int i = 0; i < 2; ++i)											//
-	{																	//
-		for (int j = 0; j < 8; ++j)										//
-		{																// On reconstruit le deck en
-			for (int k = 0; k < 4; ++ k)								// empilant les cartes du fold
-			{															// history.
-				if (this->p_fold_history[i][j][k] != 0x0)				//
-					this->p_deck.Put(this->p_fold_history[i][j][k]);	//
-				this->p_fold_history[i][j][k] = 0x0;					//
-			}															//
-		}																//
-	}																	//
-	this->p_last_fold = 0x0;		// On reset a 0 le pointer vers le last fold.
-}
-
 bool		Game::Distribute()
 {
 	if (this->p_deck.GetSize() == 32)
@@ -259,4 +229,34 @@ void		Game::UpdateScores(int der)
 		this->p_scores[this->p_speaking_team] += this->p_round_goal;
 	else
 		this->p_scores[NOT_SPEAKING_TEAM(this->p_speaking_team)] += 160;
+}
+
+void		Game::StoreFold(int winning_team, int round)
+{
+	for (int i = 0; i < 4; ++i)																//
+	{																						//
+		this->p_fold_history[winning_team][round][i] = this->p_current_fold[i];				//	On place les folds la ou il faut.
+		this->p_current_fold[i] = 0x0;														//
+	}																						//
+	this->p_last_fold = this->p_fold_history[winning_team][round];							//
+}
+
+void		Game::SetNewRound()
+{
+	this->GoToNextDealer();				// On deplace le dealer et
+	this->p_beginer = this->p_dealer;	// on set pour qu'il commence
+	this->p_turn = this->p_dealer;		// bien.
+	for (int i = 0; i < 2; ++i)											//
+	{																	//
+		for (int j = 0; j < 8; ++j)										//
+		{																// On reconstruit le deck en
+			for (int k = 0; k < 4; ++ k)								// empilant les cartes du fold
+			{															// history.
+				if (this->p_fold_history[i][j][k] != 0x0)				//
+					this->p_deck.Put(this->p_fold_history[i][j][k]);	//
+				this->p_fold_history[i][j][k] = 0x0;					//
+			}															//
+		}																//
+	}																	//
+	this->p_last_fold = 0x0;		// On reset a 0 le pointer vers le last fold.
 }

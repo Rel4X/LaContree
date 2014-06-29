@@ -41,11 +41,12 @@ private:
 	void				PrintConsole();
 	void				PrintBoard();
 	void				PrintFoldHistory();
-	void				SetNewRound();
 	bool				Distribute();
 	bool				CheckPlayedCardValidity(const Player&, unsigned int);
 	void				GoToNextPlayer();
 	void				GoToNextDealer();
 	void				UpdateScores(int);
+	void				StoreFold(int, int);
+	void				SetNewRound();
 };
 
