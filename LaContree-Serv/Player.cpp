@@ -36,6 +36,11 @@ const Card*		Player::ViewCard(unsigned int idx)
 	return (0x0);
 }
 
+void			Player::MakeCall(std::pair<int, Card::eColor>& call)
+{
+	;
+}
+
 unsigned int	Player::Play()
 {
 	// C'est la qu'il y aura l'arrivee de l'Input network.

@@ -2,6 +2,7 @@
 
 #include	<iostream>
 #include	<vector>
+#include	<utility>
 #include	"Card.h"
 
 class		Player
@@ -24,6 +25,7 @@ public:
 	void			PrintConsole();
 	void			GiveCard(Card*, int);
 	const Card*		ViewCard(unsigned int);
+	void			MakeCall(std::pair<int, Card::eColor>&);
 	unsigned int	Play();
 	Card*			PlayCard(unsigned int);
 };

@@ -15,6 +15,7 @@
 class	Game
 {
 private:
+	std::pair<int, Card::eColor>	p_call;						// L'annonce.
 	CardsDeck						p_deck;
 	CardRuler						p_ruler;					// Classe qui check les regles de la contree.
 	std::vector<Player>				p_players;
@@ -42,6 +43,7 @@ private:
 	void				PrintBoard();
 	void				PrintFoldHistory();
 	bool				Distribute();
+	void				AnnonceStep();
 	bool				CheckPlayedCardValidity(const Player&, unsigned int);
 	void				GoToNextPlayer();
 	void				GoToNextDealer();

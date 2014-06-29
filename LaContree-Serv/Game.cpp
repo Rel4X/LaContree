@@ -36,7 +36,7 @@ bool		Game::Run()
 		this->p_deck.Cut();
 		if (this->Distribute())
 		{
-			// annonces
+			this->AnnonceStep();
 			this->p_trump = Card::eColor::Spade;	//	Ces deux variables seront
 			this->p_round_goal = 120;				//  set par les annonces.
 			this->p_speaking_team = TEAM_1;			//
@@ -55,7 +55,7 @@ bool		Game::Run()
 						if (this->p_beginer == this->p_turn)							//
 							this->p_asked = played_card->GetColor();					// Si c'est la premiere carte jouee, on set la couleur.
 						// TODO: Repenser la ligne de dessous pour que les cartes soient stockees dans l'ordre ou elles ont ete jouees.
-						this->p_current_fold[this->p_turn] = played_card;				// On pose la carte sur la table. PS:
+						this->p_current_fold[this->p_turn] = played_card;				// On pose la carte sur la table.
 					}
 					// else, redemander a jouer tant que carte invalide.
 					this->PrintBoard();
@@ -195,6 +195,15 @@ bool		Game::Distribute()
 		return (true);
 	}
 	return (false);
+}
+
+void		Game::AnnonceStep()
+{
+	std::pair<int, Card::eColor>	player_call;
+
+	for (int i = 0; i < 4; ++i)
+	{
+	}
 }
 
 bool		Game::CheckPlayedCardValidity(const Player& p, unsigned int c)
