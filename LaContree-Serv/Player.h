@@ -25,7 +25,7 @@ public:
 	void			PrintConsole();
 	void			GiveCard(Card*, int);
 	const Card*		ViewCard(unsigned int);
-	void			MakeCall(std::pair<int, Card::eColor>&);
+	void			MakeCall(std::pair<int, std::pair<int, Card::eColor>>&);
 	unsigned int	Play();
 	Card*			PlayCard(unsigned int);
 };

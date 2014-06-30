@@ -26,7 +26,8 @@ void			Player::PrintConsole()
 
 void			Player::GiveCard(Card* c, int idx)
 {
-	this->p_cards[idx] = c;
+	if (c != 0x0)
+		this->p_cards[idx] = c;
 }
 
 const Card*		Player::ViewCard(unsigned int idx)
@@ -36,9 +37,35 @@ const Card*		Player::ViewCard(unsigned int idx)
 	return (0x0);
 }
 
-void			Player::MakeCall(std::pair<int, Card::eColor>& call)
+void			Player::MakeCall(std::pair<int, std::pair<int, Card::eColor>>& call)
 {
-	;
+	// Ici arrive l'input network pour les annonces. Le serveur aura un timeout de 2 minutes avant de
+	// valider ou invalider l'annonce.
+	std::cout << "Player " << call.first << " is making a call." << std::endl;
+	std::cout << "Value :" << std::endl;
+	std::cin >> call.second.first;
+	if (call.second.first == 0)
+	{
+		std::cout << "Player " << call.first << " a passe." << std::endl;
+		return ;
+	}
+	std::cout << "Couleur :" << std::endl;
+	int	c;
+
+	std::cin >> c;
+	if (c == 0)
+		call.second.second = Card::eColor::Spade;
+	else if (c == 1)
+		call.second.second = Card::eColor::Heart;
+	else if (c == 2)
+		call.second.second = Card::eColor::Diamond;
+	else if (c == 3)
+		call.second.second = Card::eColor::Club;
+	else
+	{
+		std::cout << "Erreur de couleur, on considere que le mec a passe." << std::endl;
+		call.second.first = 0;
+	}
 }
 
 unsigned int	Player::Play()

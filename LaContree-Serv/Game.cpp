@@ -12,6 +12,9 @@ Game::Game(void) :
 		for (int j = 0; j < 8; ++j)
 			for (int k = 0; k < 4; ++k)
 				this->p_fold_history[i][j][k] = 0x0;
+	this->p_call.first = -2;
+	this->p_call.second.first = 42;
+	this->p_call.second.second = Card::eColor::Diamond;
 }
 
 Game::~Game(void)
@@ -29,27 +32,28 @@ bool		Game::Run()
 	gamefinished = false;
 	this->p_deck.Shuffle();
 	this->p_dealer = 0;			// Sera definit au hasard ... ou pas ..
-	this->p_beginer = 0;
-	this->p_turn = 0;
+	this->p_beginer = 0;		//
+	this->p_turn = 0;			//
 	while (!gamefinished)
 	{
 		this->p_deck.Cut();
 		if (this->Distribute())
 		{
-			this->AnnonceStep();
-			this->p_trump = Card::eColor::Spade;	//	Ces deux variables seront
-			this->p_round_goal = 120;				//  set par les annonces.
-			this->p_speaking_team = TEAM_1;			//
-
-			for (int j = 0; j < 8; ++j)				//	Boucle du round.
-			{
-				for (int i = 0; i < 4; ++i)			//	Boucle du fold.
+			if (this->AnnonceStep() == false)		//
+				return (false);						// Si annonce Fail, on stop tout (pour le moment).
+			this->p_trump = Card::eColor::Spade;	// Ces deux variables seront
+			this->p_round_goal = 120;				// set par les annonces.
+			this->p_speaking_team = TEAM_1;			// 
+													   
+			for (int j = 0; j < 8; ++j)				// Boucle du round.
+			{										   
+				for (int i = 0; i < 4; ++i)			// Boucle du fold.
 				{
 					this->p_players[this->p_turn].PrintConsole();
 					played_card_idx = this->p_players[this->p_turn].Play();				// L'input player vient de la.
 					if (this->p_players[this->p_turn].ViewCard(played_card_idx) == 0x0)
 						return (false);
-					if (this->CheckPlayedCardValidity(this->p_players[this->p_turn], played_card_idx))
+					if (this->CheckPlayedCardValidity(this->p_players[this->p_turn], played_card_idx) == true)
 					{
 						played_card = this->p_players[this->p_turn].PlayCard(played_card_idx);	// On sort la carte du player.
 						if (this->p_beginer == this->p_turn)							//
@@ -113,6 +117,13 @@ void		Game::PrintConsole()
 	}
 }
 
+void		Game::PrintCall()
+{
+	std::cout << "Annonce : " << this->p_call.second.first << " " 
+		<< Card::eColorText[this->p_call.second.second] << std::endl;
+	std::cout << "Par joueur No : " << this->p_call.first << std::endl;
+}
+
 void		Game::PrintBoard()
 {
 	std::cout << "----------------" << std::endl;
@@ -134,6 +145,13 @@ void		Game::PrintBoard()
 	else
 		this->p_current_fold[3]->PrintConsole();
 	std::cout << "----------------" << std::endl;
+}
+
+void		Game::PrintWinnerCard(int id)
+{
+	std::cout << "Winner Card: " << std::endl;
+	this->p_current_fold[id]->PrintConsole();
+	std::cout << "---------" << std::endl;
 }
 
 void		Game::PrintFoldHistory()
@@ -197,20 +215,72 @@ bool		Game::Distribute()
 	return (false);
 }
 
-void		Game::AnnonceStep()
+bool		Game::AnnonceStep()
 {
-	std::pair<int, Card::eColor>	player_call;
+	// Premier int pour l'id du player, 2e int pour la valeur de l'annonce puis couleur de l'annonce.
+	std::pair<int, std::pair<int, Card::eColor>>			player_call;
+
+	player_call.second.first = -1;					// On init avec des valeurs random,
+	player_call.second.second = Card::eColor::Club;	// et une couleur random.
+
+	this->p_call.first = -1;						// Si id player a -1 c'est qu'aucune annonce n a ete faite.
 
 	for (int i = 0; i < 4; ++i)
 	{
+		player_call.first = this->p_turn;						// On prepare le call pour le joueur adequat.
+		this->p_players[this->p_turn].MakeCall(player_call);	// On recupere l'annonce du mec.
+		if (this->CheckCallValidity(player_call) == false)		// On check sa validite.
+		{
+			std::cout << "Failed annonce" << std::endl;
+			return (false);
+		}
+		this->GoToNextPlayer();									// On passe au joueur suivant.
 	}
+	std::cout << "Fin des annonces." << std::endl;
+	this->PrintCall();
+	return (true);
+}
+
+bool		Game::CheckCallValidity(const std::pair<int, std::pair<int, Card::eColor>>& call)
+{
+	if (this->CheckCallValueValidity(call.second.first) == false)
+		return (false);
+	if (this->p_call.first == -1)	// Premiere annonce a etre faite.
+	{								// Meme si le mec a passe (call.second.first == 0).
+		this->p_call.first = call.first;					// On set l'id du joueur qui annonce le premier.
+		this->p_call.second.first = call.second.first;		// Ainsi que son annonce.
+		this->p_call.second.second = call.second.second;	// ...
+	}
+	else
+	{
+		if (call.second.first == 0)							// Si le mec a passe,
+			return (true);									// c'est ok mais on change rien.
+		else
+		{
+			if (call.second.first > this->p_call.second.first)		// Si l'annonce est plus grande, 
+			{
+				this->p_call.first = call.first;					// On set la nouvelle annonce.
+				this->p_call.second.first = call.second.first;
+				this->p_call.second.second = call.second.second;
+				return (true);
+			}
+			return (false);
+		}
+	}
+}
+
+bool		Game::CheckCallValueValidity(unsigned int value)
+{
+	if (value == 0 || (value % 10 == 0 && value >= 80 && value <= 170))
+		return (true);
+	return (false);
 }
 
 bool		Game::CheckPlayedCardValidity(const Player& p, unsigned int c)
 {
-	if (this->p_turn == this->p_dealer)
-		return (true);
-	return (true);
+	if (this->p_turn == this->p_dealer)	// Mass taf a faire la dedant oO ...
+		return (true);					// Ferai ca a la fin :x
+	return (true);						//
 }
 
 void		Game::GoToNextPlayer()
@@ -242,12 +312,12 @@ void		Game::UpdateScores(int der)
 
 void		Game::StoreFold(int winning_team, int round)
 {
-	for (int i = 0; i < 4; ++i)																//
-	{																						//
-		this->p_fold_history[winning_team][round][i] = this->p_current_fold[i];				//	On place les folds la ou il faut.
-		this->p_current_fold[i] = 0x0;														//
-	}																						//
-	this->p_last_fold = this->p_fold_history[winning_team][round];							//
+	for (int i = 0; i < 4; ++i)													//
+	{																			//
+		this->p_fold_history[winning_team][round][i] = this->p_current_fold[i];	//	On place les folds la ou il faut.
+		this->p_current_fold[i] = 0x0;											//
+	}																			//
+	this->p_last_fold = this->p_fold_history[winning_team][round];				//
 }
 
 void		Game::SetNewRound()

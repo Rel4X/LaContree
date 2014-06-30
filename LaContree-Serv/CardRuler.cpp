@@ -30,48 +30,41 @@ unsigned int		CardRuler::CompareTwoCards(Card* fold[4], Card::eColor asked, Card
 
 	c1 = fold[i1];
 	c2 = fold[i2];
-	if (asked == trump)
+	if (c1->GetColor() == trump)
 	{
-		if (c1->GetColor() == trump)
+		if (c2->GetColor() == trump)
 		{
-			if (c2->GetColor() == trump)
-			{
-				if (CardRuler::p_card_trump_power[c1->GetFigure()] < CardRuler::p_card_trump_power[c2->GetFigure()])
-					return (i2);
+			if (CardRuler::p_card_trump_power[c1->GetFigure()] > CardRuler::p_card_trump_power[c2->GetFigure()])
 				return (i1);
-			}
-			else
-				return (i1);
+			return (i2);
 		}
 		else
-		{
-			if (c2->GetColor() == trump)
-				return (i2);
 			return (i1);
-		}
 	}
 	else
 	{
-		if (c1->GetColor() == asked)
+		if (c2->GetColor() == trump)
+			return (i2);
+		else
 		{
-			if (c2->GetColor() == asked)
+			if (c1->GetColor() == asked)
 			{
-				if (CardRuler::p_card_power[c1->GetFigure()] < CardRuler::p_card_power[c2->GetFigure()])
+				if (c2->GetColor() == asked)
+				{
+					if (CardRuler::p_card_power[c1->GetFigure()] > CardRuler::p_card_power[c2->GetFigure()])
+						return (i1);
 					return (i2);
-				return (i1);
+				}
+				else
+					return (i1);
 			}
 			else
 			{
-				if (c2->GetColor() == trump)
+				if (c2->GetColor() == asked)
 					return (i2);
-				return (i1);
+				else
+					return (i1); // Mais en fait c'est egalite.
 			}
-		}
-		else
-		{
-			if (c2->GetColor() == trump || c2->GetColor() == asked)
-				return (i2);
-			return (i1);
 		}
 	}
 }
