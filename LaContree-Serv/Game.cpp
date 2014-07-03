@@ -29,6 +29,10 @@ bool		Game::Run()
 	int				id_fold_winner;
 	int				last_fold_winner_team;
 
+	std::cout << "+------------------+" << std::endl;
+	std::cout << "| Debut de la game |" << std::endl;
+	std::cout << "+------------------+" << std::endl;
+
 	gamefinished = false;
 	this->p_deck.Shuffle();
 	this->p_dealer = 0;			// Sera definit au hasard ... ou pas ..
@@ -39,16 +43,40 @@ bool		Game::Run()
 		this->p_deck.Cut();
 		if (this->Distribute())
 		{
-			if (this->AnnonceStep() == false)		//
-				return (false);						// Si annonce Fail, on stop tout (pour le moment).
-			this->p_trump = Card::eColor::Spade;	// Ces deux variables seront
-			this->p_round_goal = 120;				// set par les annonces.
-			this->p_speaking_team = TEAM_1;			// 
-													   
+
+			std::cout << "+----------------+" << std::endl;
+			std::cout << "| Debut du round |" << std::endl;
+			std::cout << "+----------------+" << std::endl;
+			std::cout << "Le dealer est le joueur numero : " << this->p_dealer << std::endl;
+			std::cout << "Les scores sont de [0] : " << this->p_scores[0] << " [1] : " << this->p_scores[1] << std::endl;
+
+			/* -- Les annonces commencent -- */
+			std::cout << "+--------------------+" << std::endl;
+			std::cout << "| Debut des annonces |" << std::endl;
+			std::cout << "+--------------------+" << std::endl;
+			if (this->AnnonceStep() == false)							//
+				return (false);											// Si annonce Fail, on stop tout (pour le moment).
+			this->p_trump = this->p_call.second.second;					// Si annonces success, on set les infos pour
+			this->p_round_goal = this->p_call.second.first;				// la partie.
+			this->p_speaking_team = GET_TEAM_ID(this->p_call.first);	// 
+			// TODO: Checker si tout le monde a passer, faire un truc.
+			
+			this->p_turn = this->p_dealer;						// Le dealer commence.
+			this->p_beginer = this->p_dealer;					//
+
+			/* -- Le round commence -- */
 			for (int j = 0; j < 8; ++j)				// Boucle du round.
-			{										   
+			{	
+				/* -- La main commence -- */
+				std::cout << "+------------------+" << std::endl;
+				std::cout << "| Debut de la main |" << std::endl;
+				std::cout << "+------------------+" << std::endl;
 				for (int i = 0; i < 4; ++i)			// Boucle du fold.
 				{
+					if (i == 0)
+						std::cout << "Joueur " << this->p_turn << " commence." << std::endl;
+					else
+						std::cout << "Joueur " << this->p_turn << " joue." << std::endl;
 					this->p_players[this->p_turn].PrintConsole();
 					played_card_idx = this->p_players[this->p_turn].Play();				// L'input player vient de la.
 					if (this->p_players[this->p_turn].ViewCard(played_card_idx) == 0x0)
@@ -69,6 +97,9 @@ bool		Game::Run()
 				id_fold_winner = this->p_ruler.WhoWon(this->p_current_fold, this->p_asked, this->p_trump);
 				if (j == 7)													//
 					last_fold_winner_team = GET_TEAM_ID(id_fold_winner);	// Recupere la team qui fait la der.
+
+				std::cout << "Joueur " << id_fold_winner << " gagne avec son ";
+				this->p_current_fold[id_fold_winner]->PrintConsole();
 
 				this->p_beginer = id_fold_winner;			//
 				this->p_turn = id_fold_winner;				// On set le winner en beginer.
@@ -121,7 +152,7 @@ void		Game::PrintCall()
 {
 	std::cout << "Annonce : " << this->p_call.second.first << " " 
 		<< Card::eColorText[this->p_call.second.second] << std::endl;
-	std::cout << "Par joueur No : " << this->p_call.first << std::endl;
+	std::cout << "Par joueur No : " << this->p_call.first << std::endl << std::endl;;
 }
 
 void		Game::PrintBoard()
@@ -225,9 +256,12 @@ bool		Game::AnnonceStep()
 
 	this->p_call.first = -1;						// Si id player a -1 c'est qu'aucune annonce n a ete faite.
 
-	for (int i = 0; i < 4; ++i)
+	while (0x0b)
 	{
+		if (this->p_call.first == this->p_turn)
+			break ;
 		player_call.first = this->p_turn;						// On prepare le call pour le joueur adequat.
+		this->p_players[this->p_turn].PrintConsole();			//
 		this->p_players[this->p_turn].MakeCall(player_call);	// On recupere l'annonce du mec.
 		if (this->CheckCallValidity(player_call) == false)		// On check sa validite.
 		{
@@ -304,6 +338,14 @@ void		Game::UpdateScores(int der)
 	score[TEAM_1] = this->p_ruler.CountScore(this->p_fold_history[TEAM_1], this->p_trump);	// Possible optimisation car pas
 	score[TEAM_2] = this->p_ruler.CountScore(this->p_fold_history[TEAM_2], this->p_trump);	// necessaire de compter les 2 scores.
 	score[der] += 10;
+
+	std::cout << "+---------------------+" << std::endl;
+	std::cout << "| Comptage des scores |" << std::endl;
+	std::cout << "+---------------------+" << std::endl;
+	std::cout << "Team 0 fait : " << (int)score[0] << std::endl;
+	std::cout << "Team 1 fait : " << (int)score[1] << std::endl;
+	std::cout << "Team " << (int)this->p_speaking_team << " avait annonce " << this->p_call.second.first << std::endl;
+
 	if (score[this->p_speaking_team] >= this->p_round_goal)
 		this->p_scores[this->p_speaking_team] += this->p_round_goal;
 	else

@@ -41,12 +41,12 @@ void			Player::MakeCall(std::pair<int, std::pair<int, Card::eColor>>& call)
 {
 	// Ici arrive l'input network pour les annonces. Le serveur aura un timeout de 2 minutes avant de
 	// valider ou invalider l'annonce.
-	std::cout << "Player " << call.first << " is making a call." << std::endl;
-	std::cout << "Value :" << std::endl;
+	std::cout << "Annonce du joueur : " << call.first << std::endl;
+	std::cout << "Valeur :" << std::endl;
 	std::cin >> call.second.first;
 	if (call.second.first == 0)
 	{
-		std::cout << "Player " << call.first << " a passe." << std::endl;
+		std::cout << "Joueur " << call.first << " a passe." << std::endl;
 		return ;
 	}
 	std::cout << "Couleur :" << std::endl;

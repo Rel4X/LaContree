@@ -29,6 +29,7 @@ Card::~Card(void)
 
 void		Card::PrintConsole()
 {
+	std::cout << " -- ";
 	std::cout << Card::eFigureText[this->GetFigure()];
 	std::cout << " of ";
 	std::cout << Card::eColorText[this->GetColor()];
