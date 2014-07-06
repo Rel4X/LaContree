@@ -89,3 +89,18 @@ unsigned int		CardRuler::CountScore(Card* folds[8][4], Card::eColor trump)
 	}
 	return (score);
 }
+
+bool				CardRuler::IsFirstFigureHigher(Card::eFigure f1, Card::eFigure f2, bool t)
+{
+	if (t == true)
+	{
+		if (CardRuler::p_card_trump_power[f1] > CardRuler::p_card_trump_power[f2])
+			return (true);
+	}
+	else
+	{
+		if (CardRuler::p_card_power[f1] > CardRuler::p_card_power[f2])
+			return (true);
+	}
+	return (false);
+}

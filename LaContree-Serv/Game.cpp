@@ -38,12 +38,12 @@ bool		Game::Run()
 	this->p_dealer = 0;			// Sera definit au hasard ... ou pas ..
 	this->p_beginer = 0;		//
 	this->p_turn = 0;			//
+	this->p_master = -1;		// Personne a joue donc master -1.
 	while (!gamefinished)
 	{
 		this->p_deck.Cut();
 		if (this->Distribute())
 		{
-
 			std::cout << "+----------------+" << std::endl;
 			std::cout << "| Debut du round |" << std::endl;
 			std::cout << "+----------------+" << std::endl;
@@ -59,7 +59,7 @@ bool		Game::Run()
 			this->p_trump = this->p_call.second.second;					// Si annonces success, on set les infos pour
 			this->p_round_goal = this->p_call.second.first;				// la partie.
 			this->p_speaking_team = GET_TEAM_ID(this->p_call.first);	// 
-			// TODO: Checker si tout le monde a passer, faire un truc.
+			// TODO: Checker ... si tout le monde a passe, faire un truc.
 			
 			this->p_turn = this->p_dealer;						// Le dealer commence.
 			this->p_beginer = this->p_dealer;					//
@@ -80,20 +80,40 @@ bool		Game::Run()
 					this->p_players[this->p_turn].PrintConsole();
 					played_card_idx = this->p_players[this->p_turn].Play();				// L'input player vient de la.
 					if (this->p_players[this->p_turn].ViewCard(played_card_idx) == 0x0)
+					{
+						std::cout << "Carte 0x0 ..." << std::endl;
 						return (false);
-					if (this->CheckPlayedCardValidity(this->p_players[this->p_turn], played_card_idx) == true)
+					}
+					
+					if (this->CheckPlayedCardValidity(this->p_players[this->p_turn], this->p_turn, played_card_idx) == true)
 					{
 						played_card = this->p_players[this->p_turn].PlayCard(played_card_idx);	// On sort la carte du player.
-						if (this->p_beginer == this->p_turn)							//
-							this->p_asked = played_card->GetColor();					// Si c'est la premiere carte jouee, on set la couleur.
+						if (this->p_beginer == this->p_turn)			//
+						{												//
+							this->p_asked = played_card->GetColor();	// Si c'est la premiere carte jouee, on set la couleur.
+							this->p_master = this->p_turn;				// et le joueur devient le maitre.
+						}												//
+
 						// TODO: Repenser la ligne de dessous pour que les cartes soient stockees dans l'ordre ou elles ont ete jouees.
-						this->p_current_fold[this->p_turn] = played_card;				// On pose la carte sur la table.
+						this->p_current_fold[this->p_turn] = played_card;			// On pose la carte sur la table.
 					}
-					// else, redemander a jouer tant que carte invalide.
+					else
+					{
+						std::cout << "Impossible de jouer cette carte : ";
+						this->p_players[this->p_turn].ViewCard(played_card_idx)->PrintConsole();
+						return (false);
+					}
+					
 					this->PrintBoard();
+					if (this->p_master != -1)
+						this->p_master = this->p_ruler.CompareTwoCards(this->p_current_fold, this->p_asked, this->p_trump, this->p_master, this->p_turn);
+					
+					std::cout << "Le Maitre est ";
+					this->p_current_fold[this->p_master]->PrintConsole();
+					
 					this->GoToNextPlayer();
 				}
-				// On voit qui a gagne le fold.
+				// On voit qui a gagne le fold. (On doit pouvoir opti en ne se servant que du master)
 				id_fold_winner = this->p_ruler.WhoWon(this->p_current_fold, this->p_asked, this->p_trump);
 				if (j == 7)													//
 					last_fold_winner_team = GET_TEAM_ID(id_fold_winner);	// Recupere la team qui fait la der.
@@ -103,6 +123,7 @@ bool		Game::Run()
 
 				this->p_beginer = id_fold_winner;			//
 				this->p_turn = id_fold_winner;				// On set le winner en beginer.
+				this->p_master = -1;
 
 				this->StoreFold(GET_TEAM_ID(id_fold_winner), j);			// Range le plis courrant et nettoie la table.
 			}
@@ -310,11 +331,104 @@ bool		Game::CheckCallValueValidity(unsigned int value)
 	return (false);
 }
 
-bool		Game::CheckPlayedCardValidity(const Player& p, unsigned int c)
+bool		Game::CheckPlayedCardValidity(const Player& p, unsigned int id, unsigned int c)
 {
-	if (this->p_turn == this->p_dealer)	// Mass taf a faire la dedant oO ...
-		return (true);					// Ferai ca a la fin :x
-	return (true);						//
+	if (this->p_beginer == this->p_turn)
+		return (true);
+	if (p.HasSome(this->p_asked))				// Est ce que le joueur a de la couleur demandee ?
+	{
+		if (this->p_asked == this->p_trump)		// Est ce que la couleur demandee est de l'atout ?
+		{
+			if (this->HasBetterThan(p, this->p_current_fold[this->p_master]->GetColor(), this->p_current_fold[this->p_master]->GetFigure()))
+			{
+				if (p.ViewCard(c)->GetColor() == this->p_trump
+					&& this->p_ruler.IsFirstFigureHigher(p.ViewCard(c)->GetFigure(), this->p_current_fold[this->p_master]->GetFigure(), true))
+				{
+					return (true);
+				}
+				std::cout << "Le joueur a : La couleur demandee qui est l'atout, et il a mieux." << std::endl;
+				return (false);
+			}
+			else
+			{
+				if (p.ViewCard(c)->GetColor() == this->p_trump)
+					return (true);
+				std::cout << "Le joueur a de la couleur demandee, qui est de l'atout, et n'a pas mieux. Il doit quand meme mettre de l'atout." << std::endl;
+				return (false);
+			}
+		}
+		else
+		{
+			if (p.ViewCard(c)->GetColor() == this->p_asked)
+				return (true);
+			std::cout << "Le joueur a de la couleur demandee." << std::endl;
+			return (false);
+		}
+	}
+	else
+	{
+		if (GET_TEAM_ID(id) == GET_TEAM_ID(this->p_master))
+		{
+			return (true);
+		}
+		else
+		{
+			if (p.HasSome(this->p_trump))
+			{
+				if (this->p_current_fold[this->p_master]->GetColor() == this->p_trump)	// On regarde si il y a de l'atout.
+				{
+					if (this->HasBetterThan(p, this->p_current_fold[this->p_master]->GetColor(), this->p_current_fold[this->p_master]->GetFigure()))
+					{
+						if (p.ViewCard(c)->GetColor() == this->p_trump
+							&& this->p_ruler.IsFirstFigureHigher(p.ViewCard(c)->GetFigure(), this->p_current_fold[this->p_master]->GetFigure(), true))
+						{
+							return (true);
+						}
+						std::cout << "Le joueur n'a pas la couleur demandee et copain pas maitre. Joueur l a de l'atout. Et en plus il en a un meilleurs." << std::endl;
+						return (false);
+					}
+					else
+					{
+						return (true);
+					}
+				}
+				else
+				{
+					if (p.ViewCard(c)->GetColor() == this->p_trump)
+						return (true);
+					std::cout << "Le joueur n a pas la couleur. Copain pas maitre. Pas d'atout pose, et joueur en a." << std::endl;
+					return (false);
+				}
+			}
+			else
+			{
+				return (true);
+			}
+		}
+	}
+}
+
+bool		Game::HasBetterThan(const Player& p, Card::eColor c, Card::eFigure f)
+{
+	const Card*	cd;
+	bool		trump;
+
+	trump = false;
+	if (c == this->p_trump)
+		trump = true;
+	for (int i = 0; i < 8; ++i)
+	{
+		cd = p.ViewCard(i);
+		if (c != 0x0)
+		{
+			if (cd->GetColor() == c)
+			{
+				if (this->p_ruler.IsFirstFigureHigher(cd->GetFigure(), f, trump))
+					return (true);
+			}
+		}
+	}
+	return (false);
 }
 
 void		Game::GoToNextPlayer()
@@ -333,7 +447,7 @@ void		Game::GoToNextDealer()
 
 void		Game::UpdateScores(int der)
 {
-	char		score[2];
+	unsigned char		score[2];
 
 	score[TEAM_1] = this->p_ruler.CountScore(this->p_fold_history[TEAM_1], this->p_trump);	// Possible optimisation car pas
 	score[TEAM_2] = this->p_ruler.CountScore(this->p_fold_history[TEAM_2], this->p_trump);	// necessaire de compter les 2 scores.

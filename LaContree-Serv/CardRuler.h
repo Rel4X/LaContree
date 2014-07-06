@@ -22,8 +22,7 @@ public:
 public:
 	unsigned int		WhoWon(Card* [4], Card::eColor, Card::eColor);
 	unsigned int		CountScore(Card* [8][4], Card::eColor);
-
-private:
 	unsigned int		CompareTwoCards(Card* [4], Card::eColor, Card::eColor, int i1, int i2);
+	bool				IsFirstFigureHigher(Card::eFigure, Card::eFigure, bool);
 };
 

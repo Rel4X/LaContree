@@ -41,11 +41,11 @@ private:
 	Card(void)	{ }
 
 public:
-	eColor			GetColor() const	{ return (this->p_color); }
-	eFigure			GetFigure() const	{ return (this->p_figure); }
+	const eColor			GetColor() const	{ return (this->p_color); }
+	const eFigure			GetFigure() const	{ return (this->p_figure); }
 
 public:
-	void			PrintConsole();
+	void					PrintConsole() const;
 	
 };
 

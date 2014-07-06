@@ -24,9 +24,10 @@ public:
 public:
 	void			PrintConsole();
 	void			GiveCard(Card*, int);
-	const Card*		ViewCard(unsigned int);
+	const Card*		ViewCard(unsigned int) const;
 	void			MakeCall(std::pair<int, std::pair<int, Card::eColor>>&);
 	unsigned int	Play();
 	Card*			PlayCard(unsigned int);
+	bool			HasSome(Card::eColor) const;
 };
 

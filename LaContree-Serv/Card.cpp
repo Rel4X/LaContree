@@ -27,7 +27,7 @@ Card::~Card(void)
 {
 }
 
-void		Card::PrintConsole()
+void		Card::PrintConsole() const
 {
 	std::cout << " -- ";
 	std::cout << Card::eFigureText[this->GetFigure()];

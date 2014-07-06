@@ -30,7 +30,7 @@ void			Player::GiveCard(Card* c, int idx)
 		this->p_cards[idx] = c;
 }
 
-const Card*		Player::ViewCard(unsigned int idx)
+const Card*		Player::ViewCard(unsigned int idx) const
 {
 	if (idx >= 0 && idx <= 7)
 		return (this->p_cards[idx]);
@@ -88,4 +88,17 @@ Card*			Player::PlayCard(unsigned int idx)
 	card = this->p_cards[idx];
 	this->p_cards[idx] = 0x0;
 	return (card);
+}
+
+bool			Player::HasSome(Card::eColor c) const
+{
+	for (int i = 0; i < 8; ++i)
+	{
+		if (this->p_cards[i] != 0x0)
+		{
+			if (this->p_cards[i]->GetColor() == c)
+				return (true);
+		}
+	}
+	return (false);
 }

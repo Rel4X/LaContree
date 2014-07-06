@@ -9,7 +9,7 @@
 
 #define		TEAM_1					0
 #define		TEAM_2					1
-#define		GET_TEAM_ID(id)			(id / 2 == 0 ? 0 : 1)
+#define		GET_TEAM_ID(id)			(id % 2 == 0 ? 0 : 1)
 #define		NOT_SPEAKING_TEAM(v)	(v == 1 ? 0 : 1)
 
 class	Game
@@ -28,6 +28,7 @@ private:
 	Card**							p_last_fold;				// Pointeur vers le dernier plis.
 	unsigned int					p_dealer;					// Id du mec qui commence la game.
 	unsigned int					p_beginer;					// Id du mec qui commence le round.
+	unsigned int					p_master;					// Id du mec qui win le fold en ce moment;
 	unsigned int					p_turn;						// Id du mec a qui c'est le tour de jouer (== p_dealer au debut).
 	Card::eColor					p_asked;					// Il s'agit de la couleur demandee sur le fold.
 
@@ -48,7 +49,8 @@ private:
 	bool				AnnonceStep();
 	bool				CheckCallValidity(const std::pair<int, std::pair<int, Card::eColor>>&);
 	bool				CheckCallValueValidity(unsigned int);
-	bool				CheckPlayedCardValidity(const Player&, unsigned int);
+	bool				CheckPlayedCardValidity(const Player&, unsigned int, unsigned int);
+	bool				HasBetterThan(const Player&, Card::eColor, Card::eFigure);
 	void				GoToNextPlayer();
 	void				GoToNextDealer();
 	void				UpdateScores(int);
