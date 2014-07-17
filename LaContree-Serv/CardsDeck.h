@@ -20,7 +20,7 @@ public:
 	unsigned int		GetSize() const		{ return (this->p_cards.size()); }
 
 public:
-	void	PrintConsole();
+	void	PrintConsole() const;
 	void	Shuffle();
 	void	Cut();
 	Card*	Pick();

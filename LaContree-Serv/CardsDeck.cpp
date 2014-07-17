@@ -43,10 +43,10 @@ CardsDeck::~CardsDeck(void)
 {
 }
 
-void			CardsDeck::PrintConsole()
+void			CardsDeck::PrintConsole() const
 {
-	std::list<Card*>::iterator	is;
-	std::list<Card*>::iterator	ie;
+	std::list<Card*>::const_iterator	is;
+	std::list<Card*>::const_iterator	ie;
 
 	is = this->p_cards.begin();
 	ie = this->p_cards.end();

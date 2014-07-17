@@ -1,9 +1,9 @@
 #include	"CardRuler.h"
 
-CardsPowerMap			CardRuler::p_card_power;
-CardsPointMap			CardRuler::p_card_point;
-CardsTrumpPowerMap		CardRuler::p_card_trump_power;
-CardsTrumpPointMap		CardRuler::p_card_trump_point;
+const CardsPowerMap			CardRuler::p_card_power;
+const CardsPointMap			CardRuler::p_card_point;
+const CardsTrumpPowerMap	CardRuler::p_card_trump_power;
+const CardsTrumpPointMap	CardRuler::p_card_trump_point;
 
 CardRuler::CardRuler(void)
 {
@@ -34,7 +34,7 @@ unsigned int		CardRuler::CompareTwoCards(Card* fold[4], Card::eColor asked, Card
 	{
 		if (c2->GetColor() == trump)
 		{
-			if (CardRuler::p_card_trump_power[c1->GetFigure()] > CardRuler::p_card_trump_power[c2->GetFigure()])
+			if (CardRuler::p_card_trump_power.at(c1->GetFigure()) > CardRuler::p_card_trump_power.at(c2->GetFigure()))
 				return (i1);
 			return (i2);
 		}
@@ -51,7 +51,7 @@ unsigned int		CardRuler::CompareTwoCards(Card* fold[4], Card::eColor asked, Card
 			{
 				if (c2->GetColor() == asked)
 				{
-					if (CardRuler::p_card_power[c1->GetFigure()] > CardRuler::p_card_power[c2->GetFigure()])
+					if (CardRuler::p_card_power.at(c1->GetFigure()) > CardRuler::p_card_power.at(c2->GetFigure()))
 						return (i1);
 					return (i2);
 				}
@@ -81,9 +81,9 @@ unsigned int		CardRuler::CountScore(Card* folds[8][4], Card::eColor trump)
 			if (folds[i][j] != 0x0)
 			{
 				if (folds[i][j]->GetColor() == trump)
-					score += CardRuler::p_card_trump_point[folds[i][j]->GetFigure()];
+					score += CardRuler::p_card_trump_point.at(folds[i][j]->GetFigure());
 				else
-					score += CardRuler::p_card_point[folds[i][j]->GetFigure()];
+					score += CardRuler::p_card_point.at(folds[i][j]->GetFigure());
 			}
 		}
 	}
@@ -94,12 +94,12 @@ bool				CardRuler::IsFirstFigureHigher(Card::eFigure f1, Card::eFigure f2, bool 
 {
 	if (t == true)
 	{
-		if (CardRuler::p_card_trump_power[f1] > CardRuler::p_card_trump_power[f2])
+		if (CardRuler::p_card_trump_power.at(f1) > CardRuler::p_card_trump_power.at(f2))
 			return (true);
 	}
 	else
 	{
-		if (CardRuler::p_card_power[f1] > CardRuler::p_card_power[f2])
+		if (CardRuler::p_card_power.at(f1) > CardRuler::p_card_power.at(f2))
 			return (true);
 	}
 	return (false);

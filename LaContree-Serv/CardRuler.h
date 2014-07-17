@@ -10,10 +10,10 @@
 class		CardRuler
 {
 private:
-	static CardsPowerMap			p_card_power;		// Puissance des cartes.
-	static CardsPointMap			p_card_point;		// Points des cartes.
-	static CardsTrumpPowerMap		p_card_trump_power;	// Puissance des cartes, atout.
-	static CardsTrumpPointMap		p_card_trump_point;	// Points des cartes, atout.
+	static const CardsPowerMap			p_card_power;		// Puissance des cartes.
+	static const CardsPointMap			p_card_point;		// Points des cartes.
+	static const CardsTrumpPowerMap		p_card_trump_power;	// Puissance des cartes, atout.
+	static const CardsTrumpPointMap		p_card_trump_point;	// Points des cartes, atout.
 
 public:
 	CardRuler(void);
